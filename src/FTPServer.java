@@ -3,23 +3,22 @@ import java.net.*;
 
 class FTPServer {
 
-    public static void main(String[] args) {
+	public static void main(String[] args) {
 
-        try {
-            ServerSocket welcomeSocket = new ServerSocket(12000);
+		try {
+			ServerSocket welcomeSocket = new ServerSocket(12000);
 
-            while (true) {
-                Socket connectionSocket = welcomeSocket.accept();
+			while (true) {
+				Socket connectionSocket = welcomeSocket.accept();
 
-                ServerThread serverThread = new ServerThread(connectionSocket);
+				System.out.println(connectionSocket.getInetAddress().toString().substring(1) + " connected");
 
-                serverThread.run();
+				ServerThread serverThread = new ServerThread(connectionSocket);
 
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+				serverThread.run();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
-    
