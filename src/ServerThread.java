@@ -81,7 +81,9 @@ public class ServerThread extends Thread {
 
         String files = "";
         for (int i = 0; i < listOfFiles.length; i++) {
-            files += listOfFiles[i].getName() + "\n";
+        	if (listOfFiles[i].isFile()) {
+				files += listOfFiles[i].getName() + "\n";
+			}
         }
 
         dataOutToClient.writeBytes(files);
