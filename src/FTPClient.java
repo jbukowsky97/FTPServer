@@ -114,7 +114,7 @@ class FTPClient {
                 } else if (sentence.toLowerCase().equals("quit")) {
                     quit();
                 } else {
-                    System.out.println("Unrecognized command!");
+                    System.out.println("Unrecognized command!\nUsage:\n\tlist\n\t\tget list of files\n\tretr <filename>\n\t\tretrieve file with name provided\n\tstor <filename>\n\t\tstore file with name provided\n\tquit\n\t\tterminate connection");
                 }
             }
         }catch (IOException e) {
