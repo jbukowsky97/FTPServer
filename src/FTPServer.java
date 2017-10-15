@@ -17,7 +17,7 @@ class FTPServer {
 
 				serverThread.start();
 			}
-		} catch (Exception e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
