@@ -38,53 +38,74 @@ class FTPClient {
 	}
 
 	public FTPClient() {
-		try {
-			String sentence;
-			String modifiedSentence;
-			boolean isOpen = true;
-			int number = 1;
-			boolean notEnd = true;
-			String statusCode;
-			boolean clientgo = true;
+        String modifiedSentence;
+        boolean isOpen = true;
+        int number = 1;
+        boolean notEnd = true;
+        String statusCode;
+        boolean clientgo = true;
 
-			BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-			sentence = inFromUser.readLine();
-			StringTokenizer tokens = new StringTokenizer(sentence);
+        BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+        String sentence = null;
+        try {
+            sentence = inFromUser.readLine();
+            while (!sentence.startsWith("connect")) {
+                System.out.println("You are not connected to a server, try\n\tconnect <ip/hostname> <port>");
+                sentence = inFromUser.readLine();
+            }
+        } catch (IOException e) {
+            System.out.println("ERROR: Could not read from System in");
+            System.exit(5);
+        }
+        StringTokenizer tokens = new StringTokenizer(sentence);
 
-			while (!sentence.startsWith("connect")) {
-			}
+        //skip connect token
+        tokens.nextToken();
 
-			String serverName = tokens.nextToken(); // pass the connect command
-			serverName = tokens.nextToken();
-			int port = Integer.parseInt(tokens.nextToken());
+        String serverName = tokens.nextToken();
+        int port = Integer.parseInt(tokens.nextToken());
 
-			System.out.println("You are connected to " + serverName);
+        Socket ControlSocket = null;
+        try {
+            ControlSocket = new Socket(serverName, port);
+        } catch (IOException e) {
+            System.out.println("ERROR: Could not connect");
+            System.exit(5);
+        }
 
-			Socket ControlSocket = new Socket(serverName, port);
+        DataOutputStream outToServer = null;
+        DataInputStream inFromServer = null;
+        try {
+            outToServer = new DataOutputStream(ControlSocket.getOutputStream());
+            inFromServer = new DataInputStream(new BufferedInputStream(ControlSocket.getInputStream()));
+        } catch (IOException e) {
+            System.out.println("ERROR: Could not setup data streams");
+            System.exit(5);
+        }
 
-			DataOutputStream outToServer = new DataOutputStream(ControlSocket.getOutputStream());
+        System.out.println("You are connected to " + serverName);
 
-			DataInputStream inFromServer = new DataInputStream(new BufferedInputStream(ControlSocket.getInputStream()));
+        try {
+            while (isOpen) {
 
-			while (isOpen) {
+                sentence = inFromUser.readLine();
 
-				sentence = inFromUser.readLine();
-
-				if (sentence.toLowerCase().equals("list")) {
-					outToServer.writeBytes(port + " " + "list" + '\n');
-				} else if (sentence.toLowerCase().equals("retr")) {
-					outToServer.writeBytes(port + " " + "retr" + '\n');
-				} else if (sentence.toLowerCase().equals("stor")) {
-					outToServer.writeBytes(port + " " + "stor" + '\n');
-				} else if (sentence.toLowerCase().equals("quit")) {
-					quit();
-				} else {
-					System.out.println("Unrecognized command!");
-				}	
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+                if (sentence.toLowerCase().equals("list")) {
+                    outToServer.writeBytes(port + " " + "list" + '\n');
+                } else if (sentence.toLowerCase().equals("retr")) {
+                    outToServer.writeBytes(port + " " + "retr" + '\n');
+                } else if (sentence.toLowerCase().equals("stor")) {
+                    outToServer.writeBytes(port + " " + "stor" + '\n');
+                } else if (sentence.toLowerCase().equals("quit")) {
+                    quit();
+                } else {
+                    System.out.println("Unrecognized command!");
+                }
+            }
+        }catch (IOException e) {
+            System.out.println("ERROR: error occurred while connected");
+            System.exit(5);
+        }
 	}
 
 	public void quit() {
