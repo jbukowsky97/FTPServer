@@ -15,7 +15,7 @@ class FTPServer {
 
 				ServerThread serverThread = new ServerThread(connectionSocket);
 
-				serverThread.run();
+				serverThread.start();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

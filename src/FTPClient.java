@@ -7,7 +7,7 @@ import javax.swing.*;
 
 class FTPClient {
 
-	public Socket createDataConnection(int controlPort, DataOutputStream outToServer, String sentence) {
+	private Socket createDataConnection(int controlPort, DataOutputStream outToServer, String sentence) {
 
 		Socket dataSocket = null;
 
@@ -36,6 +36,22 @@ class FTPClient {
 		// System.out.println("\nWhat would you like to do next: \n retr: file.txt ||
 		// stor: file.txt || close");
 	}
+
+	private void list(int controlPort, DataOutputStream outToServer, String sentence) throws IOException {
+	    Socket dataSocket = createDataConnection(controlPort, outToServer, sentence);
+	    BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
+	    while (!inData.ready()) {
+
+        }
+        StringBuffer response = new StringBuffer();
+	    int c = 0;
+	    while ((c = inData.read()) != -1) {
+	        response.append((char) c);
+        }
+	    System.out.println(response.toString());
+	    inData.close();
+	    dataSocket.close();
+    }
 
 	public FTPClient() {
         String modifiedSentence;
@@ -89,9 +105,10 @@ class FTPClient {
             while (isOpen) {
 
                 sentence = inFromUser.readLine();
+                System.out.println("---------------");
 
                 if (sentence.toLowerCase().equals("list")) {
-                    outToServer.writeBytes(port + " " + "list" + '\n');
+                    list(port, outToServer, sentence);
                 } else if (sentence.toLowerCase().equals("retr")) {
                     outToServer.writeBytes(port + " " + "retr" + '\n');
                 } else if (sentence.toLowerCase().equals("stor")) {

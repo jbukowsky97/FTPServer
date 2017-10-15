@@ -9,25 +9,30 @@ import java.util.StringTokenizer;
 public class ServerThread extends Thread {
 
 	private Socket connectionSocket;
+	private DataOutputStream outToClient;
+	private BufferedReader inFromClient;
 
 	public ServerThread(Socket connectionSocket) {
 		this.connectionSocket = connectionSocket;
+		outToClient = null;
+		inFromClient = null;
+        try {
+            outToClient = new DataOutputStream(connectionSocket.getOutputStream());
+            inFromClient = new BufferedReader(
+                    new InputStreamReader(connectionSocket.getInputStream()));
+        } catch (IOException e) {
+            System.out.println("ERROR: could not set up data streams");
+        }
 	}
 
 	public void run() {
 		try {
 			while (true) {
-				DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
-				BufferedReader inFromClient = new BufferedReader(
-						new InputStreamReader(connectionSocket.getInputStream()));
+			    while (!inFromClient.ready()) {
 
-				String fromClient = null;
-				try {
-					fromClient = inFromClient.readLine();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
+                }
+				String fromClient = inFromClient.readLine();
+                System.out.println("From Client:\t" + fromClient);
 				StringTokenizer tokens = new StringTokenizer(fromClient);
 
 				String frstln = tokens.nextToken();
@@ -35,22 +40,7 @@ public class ServerThread extends Thread {
 				String clientCommand = tokens.nextToken();
 
 				if (clientCommand.equals("list")) {
-
-					Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-					DataOutputStream dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());			
-					
-					File folder = new File(System.getProperty("user.dir"));
-					File[] listOfFiles = folder.listFiles();
-
-				    for (int i = 0; i < listOfFiles.length; i++) {
-				      if (listOfFiles[i].isFile()) {
-				        System.out.println("file " + listOfFiles[i].getName());
-				      }
-				    }
-
-					dataOutToClient.close();
-					dataSocket.close();
-					System.out.println("Data Socket closed");
+				    list(connectionSocket, port);
 				}
 
 				if (clientCommand.equals("retr")) {
@@ -81,4 +71,22 @@ public class ServerThread extends Thread {
 			System.out.println(e);
 		}
 	}
+
+	private void list(Socket connectionSocket, int port) throws IOException {
+        Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+        DataOutputStream dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+
+        File folder = new File(System.getProperty("user.dir"));
+        File[] listOfFiles = folder.listFiles();
+
+        String files = "";
+        for (int i = 0; i < listOfFiles.length; i++) {
+            files += listOfFiles[i].getName() + "\n";
+        }
+
+        dataOutToClient.writeBytes(files);
+
+        dataOutToClient.close();
+        dataSocket.close();
+    }
 }
