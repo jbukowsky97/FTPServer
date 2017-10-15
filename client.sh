@@ -1,5 +1,3 @@
 #! /bin/bash
 
-cd build/
-java FTPClient
-cd ../
+java -cp build/ FTPClient
