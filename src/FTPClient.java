@@ -12,7 +12,7 @@ class FTPClient {
 		try {
 			int dataPort = controlPort + 2;
 			ServerSocket welcomeData = new ServerSocket(dataPort);
-			outToServer.writeBytes(sentence + " " + dataPort + " " + '\n');
+			outToServer.writeBytes(dataPort + " " + sentence + "\n");
 			dataSocket = welcomeData.accept();
 			welcomeData.close();
 		} catch (Exception e) {
@@ -20,19 +20,6 @@ class FTPClient {
 		} finally {
 			return dataSocket;
 		}
-
-		// TODO Need this
-		// DataInputStream inData = new DataInputStream(new
-		// BufferedInputStream(dataSocket.getInputStream()));
-		// while (notEnd) {
-		// modifiedSentence = inData.readUTF();
-		// //........................................
-		// //........................................
-
-		// welcomeData.close();
-		// dataSocket.close();
-		// System.out.println("\nWhat would you like to do next: \n retr: file.txt ||
-		// stor: file.txt || close");
 	}
 
 	private void list(int controlPort, DataOutputStream outToServer, String sentence) throws IOException {
@@ -53,7 +40,8 @@ class FTPClient {
 
 	public void quit(DataOutputStream outToServer) {
 		try {
-			outToServer.writeBytes("quit");
+			//Passing quit command and a dummy port to avoid server issues
+			outToServer.writeBytes("0" + " " + "quit");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

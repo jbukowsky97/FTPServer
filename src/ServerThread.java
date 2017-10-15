@@ -35,11 +35,10 @@ public class ServerThread extends Thread {
 				System.out.println("From Client:\t" + fromClient);
 				StringTokenizer tokens = new StringTokenizer(fromClient);
 
+				int port = Integer.parseInt(tokens.nextToken());
 				String clientCommand = tokens.nextToken();
-				int port = 0;
 
 				if (clientCommand.equals("list")) {
-					port = Integer.parseInt(tokens.nextToken());
 					list(connectionSocket, port);
 				} else if (clientCommand.equals("retr")) {
 					port = Integer.parseInt(tokens.nextToken());
