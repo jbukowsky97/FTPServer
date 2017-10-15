@@ -7,7 +7,7 @@ class FTPServer {
 
 		try {
 			ServerSocket welcomeSocket = new ServerSocket(12000);
-
+			
 			while (true) {
 				Socket connectionSocket = welcomeSocket.accept();
 
