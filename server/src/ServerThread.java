@@ -154,6 +154,7 @@ public class ServerThread extends Thread {
 			Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
 			BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
 
+			//wait for the data to be ready
 			while (!inData.ready())
 				;
 
@@ -165,9 +166,15 @@ public class ServerThread extends Thread {
 			}
 			System.out.println(ROOT_PATH + fileName);
 
-
+			//create a new file
 			File newFile = new File(ROOT_PATH + fileName);
 			newFile.createNewFile();
+
+			try (PrintStream out = new PrintStream(new FileOutputStream(ROOT_PATH + fileName))) {
+				out.print(response.toString());
+			} finally {
+				System.out.println("stor successfull");
+			}
 
 			inData.close();
 			dataSocket.close();
