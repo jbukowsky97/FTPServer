@@ -5,6 +5,8 @@ import java.lang.*;
 
 class FTPClient {
 
+    private static final String ROOT_PATH = System.getProperty("user.dir") + "/root/";
+
 	private Socket createDataConnection(int controlPort, DataOutputStream outToServer, String sentence) {
 
 		Socket dataSocket = null;
@@ -47,6 +49,9 @@ class FTPClient {
 	}
 
 	private void retr(int controlPort, DataOutputStream outToServer, String sentence) {
+        StringTokenizer tokens = new StringTokenizer(sentence);
+        tokens.nextToken();
+		String fileName = tokens.nextToken();
 		try {
 			Socket dataSocket = createDataConnection(controlPort, outToServer, sentence);
 			BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
@@ -61,10 +66,10 @@ class FTPClient {
 				response.append(msg + "\n");
 			}
 
-			File newFile = new File("retrieved.txt");
+			File newFile = new File(ROOT_PATH + fileName);
 			newFile.createNewFile();
 
-			try (PrintStream out = new PrintStream(new FileOutputStream("retrieved.txt"))) {
+			try (PrintStream out = new PrintStream(new FileOutputStream(ROOT_PATH + fileName))) {
 				out.print(response.toString());
 			} finally {
 				System.out.println("retr successfull");

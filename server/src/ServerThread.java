@@ -13,6 +13,8 @@ public class ServerThread extends Thread {
 	private DataOutputStream outToClient;
 	private BufferedReader inFromClient;
 
+	private static final String ROOT_PATH = System.getProperty("user.dir") + "/root/";
+
 	public ServerThread(Socket connectionSocket) {
 		this.connectionSocket = connectionSocket;
 		outToClient = null;
@@ -63,7 +65,7 @@ public class ServerThread extends Thread {
 		Socket dataSocket;
 		DataOutputStream dataOutToClient;
 		try {
-			File folder = new File(System.getProperty("user.dir"));
+			File folder = new File(ROOT_PATH);
 			File[] listOfFiles = folder.listFiles();
 
 			dataSocket = new Socket(connectionSocket.getInetAddress(), port);
@@ -93,7 +95,8 @@ public class ServerThread extends Thread {
 			dataSocket = new Socket(connectionSocket.getInetAddress(), port);
 			dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
 
-			inputStream = new BufferedReader(new FileReader(fileName));
+			System.out.println(ROOT_PATH + fileName);
+			inputStream = new BufferedReader(new FileReader(ROOT_PATH + fileName));
 
 			String count;
 
