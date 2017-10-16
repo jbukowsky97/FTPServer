@@ -100,7 +100,6 @@ public class ServerThread extends Thread {
 			dataOutToClient.writeBytes("eof");
 			dataOutToClient.close();
 			dataSocket.close();
-			System.out.println("list data socket closed");
 		} catch (Exception e) {
 			System.out.println("ERROR: list failed");
 		}
@@ -121,7 +120,6 @@ public class ServerThread extends Thread {
 			dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
 			
 			/* Create an input stream based on the given file path */
-			System.out.println(ROOT_PATH + fileName);
 			inputStream = new BufferedReader(new FileReader(ROOT_PATH + fileName));
 
 			String count;
@@ -137,7 +135,6 @@ public class ServerThread extends Thread {
 			dataOutToClient.writeBytes("eof");
 			dataOutToClient.close();
 			dataSocket.close();
-			System.out.println("retr data socket closed");
 		} catch (Exception e) {
 			System.out.println("ERROR: retr failed");
 		}
@@ -164,7 +161,6 @@ public class ServerThread extends Thread {
 			while (!((msg = inData.readLine()).equals("eof"))) {
 				response.append(msg + "\n");
 			}
-			System.out.println(ROOT_PATH + fileName);
 
 			//create a new file
 			File newFile = new File(ROOT_PATH + fileName);
@@ -179,7 +175,6 @@ public class ServerThread extends Thread {
 
 			inData.close();
 			dataSocket.close();
-			System.out.println("stor data socket closed");
 		} catch (Exception e) {
 			System.out.println("ERROR: stor failed");
 		}

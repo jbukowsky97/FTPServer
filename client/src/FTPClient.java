@@ -61,7 +61,6 @@ class FTPClient {
 			/* Close the data sockets*/
 			inData.close();
 			dataSocket.close();
-			System.out.println("list data socket closed");
 		} catch (Exception e) {
 			System.out.println("ERROR: list failed");
 		}
@@ -106,7 +105,6 @@ class FTPClient {
 			/* Close the data sockets*/
 			inData.close();
 			dataSocket.close();
-			System.out.println("retr data socket closed");
 		} catch (Exception e) {
 			System.out.println("ERROR: retr failed");
 		}
@@ -214,6 +212,7 @@ class FTPClient {
 				System.out.println("ERROR: connection failed");
 				System.exit(5);
 			}
+			System.out.println();
 		}
 
 		DataOutputStream outToServer = null;
@@ -234,7 +233,7 @@ class FTPClient {
 
 				/* Reads commands from the client until "quit" is entered */
 				sentence = inFromUser.readLine();
-				System.out.println("---------------");
+				System.out.println("");
 
 				if (sentence.toLowerCase().equals("list")) {
 					list(port, outToServer, sentence);
@@ -248,6 +247,8 @@ class FTPClient {
 					System.out.println(
 							"unrecognized command!\nUsage:\n\tlist\n\t\tget list of files\n\tretr <filename>\n\t\tretrieve file with name provided\n\tstor <filename>\n\t\tstore file with name provided\n\tquit\n\t\tterminate connection");
 				}
+
+				System.out.println();
 			}
 		} catch (IOException e) {
 			System.out.println("ERROR: error occurred while connected");
