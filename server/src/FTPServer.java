@@ -6,7 +6,7 @@ class FTPServer {
 	public static void main(String[] args) {
 		try {
 			/* Create new welcome socket on port 12000 */
-			ServerSocket welcomeSocket = new ServerSocket(12000);
+			ServerSocket welcomeSocket = new ServerSocket(5338);
 
 			/* Loop for continued client usage */
 			while (true) {

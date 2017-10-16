@@ -96,15 +96,13 @@ class FTPClient {
 			newFile.createNewFile();
 
 			/* Move the data from the servers response onto the new file */
-			try (PrintStream out = new PrintStream(new FileOutputStream(ROOT_PATH + fileName))) {
-				out.print(response.toString());
-			} finally {
-				System.out.println("retr successfull");
-			}
+			PrintStream out = new PrintStream(new FileOutputStream(ROOT_PATH + fileName));
+			out.print(response.toString());
 
 			/* Close the data sockets*/
 			inData.close();
 			dataSocket.close();
+			System.out.println("retr successful");
 		} catch (Exception e) {
 			System.out.println("ERROR: retr failed");
 		}
@@ -205,7 +203,7 @@ class FTPClient {
 					connected = controlSocket.isConnected();
 					/* If user enters the "quit" command */
 				} else if (sentence.startsWith("quit")) {
-					System.out.println("closing...\n");
+					System.out.println("exit...\n");
 					System.exit(0);
 				} else {
 					/* If user is not connected to a server and is entering input */
@@ -248,8 +246,7 @@ class FTPClient {
 				} else if (sentence.toLowerCase().equals("quit")) {
 					quit(outToServer);
 				} else {
-					System.out.println(
-							"unrecognized command or wrong number of parameters\nusage:\n\tlist\n\t\tget list of files\n\tretr <filename>\n\t\tretrieve file with name provided\n\tstor <filename>\n\t\tstore file with name provided\n\tquit\n\t\tterminate connection");
+					System.out.println("unrecognized command or wrong number of parameters\nusage:\n\tlist\n\t\tget list of files\n\tretr <filename>\n\t\tretrieve file with name provided\n\tstor <filename>\n\t\tstore file with name provided\n\tquit\n\t\tterminate connection");
 				}
 
 				System.out.println();

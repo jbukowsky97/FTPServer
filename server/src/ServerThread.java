@@ -167,14 +167,12 @@ public class ServerThread extends Thread {
 			newFile.createNewFile();
 
 			//move data from client to server file
-			try (PrintStream out = new PrintStream(new FileOutputStream(ROOT_PATH + fileName))) {
-				out.print(response.toString());
-			} finally {
-				System.out.println("stor successfull");
-			}
+			PrintStream out = new PrintStream(new FileOutputStream(ROOT_PATH + fileName));
+			out.print(response.toString());
 
 			inData.close();
 			dataSocket.close();
+			System.out.println("File stored from: " + connectionSocket.getInetAddress());
 		} catch (Exception e) {
 			System.out.println("ERROR: stor failed");
 		}
