@@ -185,6 +185,10 @@ class FTPClient {
 				if (sentence.startsWith("connect")) {
 					StringTokenizer tokens = new StringTokenizer(sentence);
 
+					if (tokens.countTokens() != 3) {
+					    System.out.println("wrong number of parameters\n\t'connect <ip/hostname> <port>' or 'quit' to exit");
+					    continue;
+                    }
 					/* Skip the connect token */
 					tokens.nextToken();
 
@@ -237,15 +241,15 @@ class FTPClient {
 
 				if (sentence.toLowerCase().equals("list")) {
 					list(port, outToServer, sentence);
-				} else if (sentence.toLowerCase().startsWith("retr")) {
+				} else if (sentence.toLowerCase().startsWith("retr ") && sentence.split(" ").length == 2) {
 					retr(port, outToServer, sentence);
-				} else if (sentence.toLowerCase().startsWith("stor")) {
+				} else if (sentence.toLowerCase().startsWith("stor ") && sentence.split(" ").length == 2) {
 					stor(port, outToServer, sentence);
 				} else if (sentence.toLowerCase().equals("quit")) {
 					quit(outToServer);
 				} else {
 					System.out.println(
-							"unrecognized command!\nUsage:\n\tlist\n\t\tget list of files\n\tretr <filename>\n\t\tretrieve file with name provided\n\tstor <filename>\n\t\tstore file with name provided\n\tquit\n\t\tterminate connection");
+							"unrecognized command or wrong number of parameters\nusage:\n\tlist\n\t\tget list of files\n\tretr <filename>\n\t\tretrieve file with name provided\n\tstor <filename>\n\t\tstore file with name provided\n\tquit\n\t\tterminate connection");
 				}
 
 				System.out.println();
