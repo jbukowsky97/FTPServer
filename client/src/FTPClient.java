@@ -78,7 +78,31 @@ class FTPClient {
 	}
 
 	private void stor(int port, DataOutputStream outToServer, DataInputStream inFromServer, String sentence) {
+		DataOutputStream dataOutToServer;
+		DataOutputStream dataOutToServer;
+		BufferedReader inputStream;
 
+		try{
+			Socket dataSocket(createDataConnection(port, outToServer, sentence));
+			dataOutToServer = new DataOutputStream(dataSocket.getOutputStream());
+
+			inputStream = new BufferedReader(new FileReader(fileName));
+
+			String count;
+
+			while ((count = inputStream.readLine()) != null) {
+				dataOutToServer.writeBytes(count + "\n");
+			}
+
+			inputStream.close();
+
+			dataOutToClient.writeBytes("eof");
+			dataOutToClient.close();
+			dataSocket.close();
+			System.out.println("stor data socket closed");
+		} catch (Exception e) {
+			System.out.println("ERROR: stor failed");
+		}
 	}
 
 	private void quit(DataOutputStream outToServer) {
@@ -147,13 +171,16 @@ class FTPClient {
 
 				sentence = inFromUser.readLine();
 				System.out.println("---------------");
+				StringTokenizer tokens = new StringTokenizer(sentence);
+				sentence = tokens.nextToken();
 
 				if (sentence.toLowerCase().equals("list")) {
 					list(port, outToServer, sentence);
 				} else if (sentence.toLowerCase().startsWith("retr")) {
 					retr(port, outToServer, sentence);
 				} else if (sentence.toLowerCase().startsWith("stor")) {
-
+					String fileName = tokens.nextToken();
+					stor(port, outToServer, sentence, fileName);
 				} else if (sentence.toLowerCase().equals("quit")) {
 					quit(outToServer);
 				} else {

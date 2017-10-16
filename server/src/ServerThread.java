@@ -113,7 +113,37 @@ public class ServerThread extends Thread {
 	}
 
 	public void stor(Socket connectionSocket, int port, String fileName) {
+		Socket dataSocket;
+		DataInputStream dataInputStream;
+		BufferedReader inputStream;
+		try {
+			dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+			BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
 
+			while (!inData.ready())
+				;
+
+			StringBuffer response = new StringBuffer();
+			String msg;
+
+			while (!((msg = inData.readLine()).equals("eof"))) {
+				response.append(msg + "\n");
+			}
+
+			File newFile = new File(fileName);
+			newFile.createNewFile();
+
+			try (PrintStream out = new PrintStream(new FileOutputStream(fileName))) {
+				out.print(response.toString());
+			} finally {
+				System.out.println("stor successfull");
+			}
+
+			inData.close();
+			dataSocket.close();
+		} catch (Exception e) {
+			System.out.println("ERROR: stor failed");
+		}
 	}
 
 	private void quit(Socket connectionSocket) {
