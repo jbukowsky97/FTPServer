@@ -8,7 +8,7 @@ class FTPClient {
 	private Socket createDataConnection(int controlPort, DataOutputStream outToServer, String sentence) {
 
 		Socket dataSocket = null;
-		
+
 		try {
 			int dataPort = controlPort + 2;
 			ServerSocket welcomeData = new ServerSocket(dataPort);
@@ -26,36 +26,48 @@ class FTPClient {
 		try {
 			Socket dataSocket = createDataConnection(controlPort, outToServer, sentence);
 			BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
+
 			while (!inData.ready());
 
 			StringBuffer response = new StringBuffer();
 			String msg;
+
 			while (!((msg = inData.readLine()).equals("eof"))) {
 				response.append(msg + "\n");
 			}
-			System.out.println(response.toString());
+
+			System.out.println(response.toString().trim());
+
 			inData.close();
 			dataSocket.close();
 		} catch (Exception e) {
-			
+
 		}
 	}
 
-	private void retr(int port, DataOutputStream outToServer, BufferedReader inFromServer, String sentence) {
+	private void retr(int controlPort, DataOutputStream outToServer, String sentence) {
 		try {
-			int dataPort = port + 2;
-			outToServer.writeBytes(dataPort + " " + sentence + "\n");
+			Socket dataSocket = createDataConnection(controlPort, outToServer, sentence);
+			BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
 
-			String statusCode = inFromServer.readLine();
-//			while ((statusCode = inFromServer.readLine()).equals("")) {
-//				System.out.println(statusCode);
-//			}
+			while (!inData.ready());
 
-			if (!statusCode.contains("200")) {
-				System.out.println("File not present on remote server");
-			} else {
-				System.out.println("Working");
+			StringBuffer response = new StringBuffer();
+			String msg;
+
+			while (!((msg = inData.readLine()).equals("eof"))) {
+				response.append(msg + "\n");
 			}
+			
+			File newFile = new File("retrieved.txt");
+			newFile.createNewFile();
+			
+			try (PrintStream out = new PrintStream(new FileOutputStream("retrieved.txt"))) {
+			    out.print(response.toString());
+			}
+
+			inData.close();
+			dataSocket.close();
 		} catch (Exception e) {
 
 		}
@@ -63,11 +75,11 @@ class FTPClient {
 
 	private void stor(int port, DataOutputStream outToServer, DataInputStream inFromServer, String sentence) {
 		
-	} 
+	}
 
 	private void quit(DataOutputStream outToServer) {
 		try {
-			//Passing quit command and a dummy port to avoid server issues
+			// Passing quit command and a dummy port to avoid server issues
 			outToServer.writeBytes("0" + " " + "quit");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -93,7 +105,7 @@ class FTPClient {
 				if (sentence.startsWith("connect")) {
 					StringTokenizer tokens = new StringTokenizer(sentence);
 
-					//skip connect token
+					// skip connect token
 					tokens.nextToken();
 
 					String serverName = tokens.nextToken();
@@ -107,7 +119,8 @@ class FTPClient {
 					System.out.println("Closing\n");
 					System.exit(0);
 				} else {
-					System.out.println("You are not connected to a server, try\n\t'connect <ip/hostname> <port>' or 'quit' to exit");
+					System.out.println(
+							"You are not connected to a server, try\n\t'connect <ip/hostname> <port>' or 'quit' to exit");
 				}
 			} catch (IOException e) {
 				System.out.println("ERROR: Connection failed");
@@ -134,16 +147,17 @@ class FTPClient {
 				if (sentence.toLowerCase().equals("list")) {
 					list(port, outToServer, sentence);
 				} else if (sentence.toLowerCase().startsWith("retr")) {
-					retr(port, outToServer, inFromServer, sentence);
+					retr(port, outToServer, sentence);
 				} else if (sentence.toLowerCase().startsWith("stor")) {
-					outToServer.writeBytes(port + " " + "stor" + '\n');
+					
 				} else if (sentence.toLowerCase().equals("quit")) {
 					quit(outToServer);
 				} else {
-					System.out.println("Unrecognized command!\nUsage:\n\tlist\n\t\tget list of files\n\tretr <filename>\n\t\tretrieve file with name provided\n\tstor <filename>\n\t\tstore file with name provided\n\tquit\n\t\tterminate connection");
+					System.out.println(
+							"Unrecognized command!\nUsage:\n\tlist\n\t\tget list of files\n\tretr <filename>\n\t\tretrieve file with name provided\n\tstor <filename>\n\t\tstore file with name provided\n\tquit\n\t\tterminate connection");
 				}
 			}
-		}catch (IOException e) {
+		} catch (IOException e) {
 			System.out.println("ERROR: error occurred while connected");
 			System.exit(5);
 		}
