@@ -27,7 +27,8 @@ class FTPClient {
 			Socket dataSocket = createDataConnection(controlPort, outToServer, sentence);
 			BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
 
-			while (!inData.ready());
+			while (!inData.ready())
+				;
 
 			StringBuffer response = new StringBuffer();
 			String msg;
@@ -41,7 +42,7 @@ class FTPClient {
 			inData.close();
 			dataSocket.close();
 		} catch (Exception e) {
-
+			System.out.println("ERROR: list failed");
 		}
 	}
 
@@ -50,7 +51,8 @@ class FTPClient {
 			Socket dataSocket = createDataConnection(controlPort, outToServer, sentence);
 			BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
 
-			while (!inData.ready());
+			while (!inData.ready())
+				;
 
 			StringBuffer response = new StringBuffer();
 			String msg;
@@ -58,23 +60,25 @@ class FTPClient {
 			while (!((msg = inData.readLine()).equals("eof"))) {
 				response.append(msg + "\n");
 			}
-			
+
 			File newFile = new File("retrieved.txt");
 			newFile.createNewFile();
-			
+
 			try (PrintStream out = new PrintStream(new FileOutputStream("retrieved.txt"))) {
-			    out.print(response.toString());
+				out.print(response.toString());
+			} finally {
+				System.out.println("retr successfull");
 			}
 
 			inData.close();
 			dataSocket.close();
 		} catch (Exception e) {
-
+			System.out.println("ERROR: retr failed");
 		}
 	}
 
 	private void stor(int port, DataOutputStream outToServer, DataInputStream inFromServer, String sentence) {
-		
+
 	}
 
 	private void quit(DataOutputStream outToServer) {
@@ -84,7 +88,7 @@ class FTPClient {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("Exiting");
+		System.out.println("exiting...");
 		System.exit(0);
 	}
 
@@ -113,17 +117,17 @@ class FTPClient {
 
 					controlSocket = new Socket(serverName, port);
 
-					System.out.println("Connected: " + serverName + ":" + port);
+					System.out.println(serverName + " connected on port " + port);
 					connected = controlSocket.isConnected();
 				} else if (sentence.startsWith("quit")) {
-					System.out.println("Closing\n");
+					System.out.println("closing...\n");
 					System.exit(0);
 				} else {
 					System.out.println(
 							"You are not connected to a server, try\n\t'connect <ip/hostname> <port>' or 'quit' to exit");
 				}
 			} catch (IOException e) {
-				System.out.println("ERROR: Connection failed");
+				System.out.println("ERROR: connection failed");
 				System.exit(5);
 			}
 		}
@@ -134,7 +138,7 @@ class FTPClient {
 			outToServer = new DataOutputStream(controlSocket.getOutputStream());
 			inFromServer = new BufferedReader(new InputStreamReader(controlSocket.getInputStream()));
 		} catch (IOException e) {
-			System.out.println("ERROR: Could not setup data streams");
+			System.out.println("ERROR: could not setup data streams");
 			System.exit(5);
 		}
 
@@ -149,12 +153,12 @@ class FTPClient {
 				} else if (sentence.toLowerCase().startsWith("retr")) {
 					retr(port, outToServer, sentence);
 				} else if (sentence.toLowerCase().startsWith("stor")) {
-					
+
 				} else if (sentence.toLowerCase().equals("quit")) {
 					quit(outToServer);
 				} else {
 					System.out.println(
-							"Unrecognized command!\nUsage:\n\tlist\n\t\tget list of files\n\tretr <filename>\n\t\tretrieve file with name provided\n\tstor <filename>\n\t\tstore file with name provided\n\tquit\n\t\tterminate connection");
+							"unrecognized command!\nUsage:\n\tlist\n\t\tget list of files\n\tretr <filename>\n\t\tretrieve file with name provided\n\tstor <filename>\n\t\tstore file with name provided\n\tquit\n\t\tterminate connection");
 				}
 			}
 		} catch (IOException e) {

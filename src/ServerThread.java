@@ -19,8 +19,7 @@ public class ServerThread extends Thread {
 		inFromClient = null;
 		try {
 			outToClient = new DataOutputStream(connectionSocket.getOutputStream());
-			inFromClient = new BufferedReader(
-				new InputStreamReader(connectionSocket.getInputStream()));
+			inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 		} catch (IOException e) {
 			System.out.println("ERROR: could not set up data streams");
 		}
@@ -30,11 +29,11 @@ public class ServerThread extends Thread {
 		boolean running = true;
 		try {
 			while (running) {
-				while (!inFromClient.ready()) {
+				while (!inFromClient.ready())
+					;
 
-				}
 				String fromClient = inFromClient.readLine();
-				System.out.println("From Client:\t" + fromClient);
+				System.out.println("client request: " + fromClient);
 				StringTokenizer tokens = new StringTokenizer(fromClient);
 
 				int port = Integer.parseInt(tokens.nextToken());
@@ -46,14 +45,8 @@ public class ServerThread extends Thread {
 					String fileName = tokens.nextToken();
 					retr(connectionSocket, port, fileName);
 				} else if (clientCommand.equals("stor")) {
-					Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-					DataOutputStream dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
-
-					System.out.println("-stor logic-");
-
-					dataOutToClient.close();
-					dataSocket.close();
-					System.out.println("Data Socket closed");
+					String fileName = tokens.nextToken();
+					stor(connectionSocket, port, fileName);
 				} else if (clientCommand.equals("quit")) {
 					quit(connectionSocket);
 					running = false;
@@ -62,7 +55,7 @@ public class ServerThread extends Thread {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			System.out.println("Client " + connectionSocket.getInetAddress() + " disconnected\n");
+			System.out.println("client " + connectionSocket.getInetAddress() + " disconnected\n");
 		}
 	}
 
@@ -76,56 +69,58 @@ public class ServerThread extends Thread {
 			dataSocket = new Socket(connectionSocket.getInetAddress(), port);
 			dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
 
-			for (File f: listOfFiles) {
+			for (File f : listOfFiles) {
 				if (f.isFile()) {
 					dataOutToClient.writeBytes(f.getName() + "\n");
 				}
 			}
-			
+
 			dataOutToClient.writeBytes("eof");
 			dataOutToClient.close();
 			dataSocket.close();
+			System.out.println("list data socket closed");
 		} catch (Exception e) {
 			System.out.println("ERROR: list failed");
 		}
-	}
-	
-	public void stor(Socket connectionSocket, int port, String fileName) {
-		
 	}
 
 	private void retr(Socket connectionSocket, int port, String fileName) {
 		Socket dataSocket;
 		DataOutputStream dataOutToClient;
 		BufferedReader inputStream;
-		
+
 		try {
 			dataSocket = new Socket(connectionSocket.getInetAddress(), port);
 			dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
 
 			inputStream = new BufferedReader(new FileReader(fileName));
-			
-	        String count;
-	        
-	        while ((count = inputStream.readLine()) != null) {
-	            dataOutToClient.writeBytes(count + "\n");
-	        }
-	        
-	        inputStream.close();
+
+			String count;
+
+			while ((count = inputStream.readLine()) != null) {
+				dataOutToClient.writeBytes(count + "\n");
+			}
+
+			inputStream.close();
 
 			dataOutToClient.writeBytes("eof");
 			dataOutToClient.close();
 			dataSocket.close();
+			System.out.println("retr data socket closed");
 		} catch (Exception e) {
-			
+			System.out.println("ERROR: retr failed");
 		}
+	}
+
+	public void stor(Socket connectionSocket, int port, String fileName) {
+
 	}
 
 	private void quit(Socket connectionSocket) {
 		try {
 			connectionSocket.close();
 		} catch (Exception e) {
-			
+			System.out.println("ERROR: quit failed");
 		}
 	}
 }
