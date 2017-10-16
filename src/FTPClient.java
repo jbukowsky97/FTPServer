@@ -22,23 +22,34 @@ class FTPClient {
 		}
 	}
 
-	private void list(int controlPort, DataOutputStream outToServer, String sentence) throws IOException {
-		Socket dataSocket = createDataConnection(controlPort, outToServer, sentence);
-		BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
-		while (!inData.ready()) {
+	private void list(int controlPort, DataOutputStream outToServer, String sentence) {
+		try {
+			Socket dataSocket = createDataConnection(controlPort, outToServer, sentence);
+			BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
+			while (!inData.ready());
 
+			StringBuffer response = new StringBuffer();
+			String msg;
+			while (!((msg = inData.readLine()).equals("eof"))) {
+				response.append(msg + "\n");
+			}
+			System.out.println(response.toString());
+			inData.close();
+			dataSocket.close();
+		} catch (Exception e) {
+			
 		}
-		StringBuffer response = new StringBuffer();
-		int c = 0;
-		while ((c = inData.read()) != -1) {
-			response.append((char) c);
-		}
-		System.out.println(response.toString());
-		inData.close();
-		dataSocket.close();
 	}
 
-	public void quit(DataOutputStream outToServer) {
+	private void retr(int port, DataOutputStream outToServer, DataInputStream inFromServer, String sentence) {
+		
+	}
+
+	private void stor(int port, DataOutputStream outToServer, DataInputStream inFromServer, String sentence) {
+		
+	} 
+
+	private void quit(DataOutputStream outToServer) {
 		try {
 			//Passing quit command and a dummy port to avoid server issues
 			outToServer.writeBytes("0" + " " + "quit");
