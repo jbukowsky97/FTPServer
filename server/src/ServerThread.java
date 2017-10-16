@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.StringTokenizer;
+import java.io.*;
+
 
 public class ServerThread extends Thread {
 
@@ -116,11 +118,9 @@ public class ServerThread extends Thread {
 	}
 
 	public void stor(Socket connectionSocket, int port, String fileName) {
-		Socket dataSocket;
-		DataInputStream dataInputStream;
-		BufferedReader inputStream;
+
 		try {
-			dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+			Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
 			BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
 
 			while (!inData.ready())
@@ -132,18 +132,15 @@ public class ServerThread extends Thread {
 			while (!((msg = inData.readLine()).equals("eof"))) {
 				response.append(msg + "\n");
 			}
+			System.out.println(ROOT_PATH + fileName);
 
-			File newFile = new File(fileName);
+
+			File newFile = new File(ROOT_PATH + fileName);
 			newFile.createNewFile();
-
-			try (PrintStream out = new PrintStream(new FileOutputStream(fileName))) {
-				out.print(response.toString());
-			} finally {
-				System.out.println("stor successfull");
-			}
 
 			inData.close();
 			dataSocket.close();
+			System.out.println("stor data socket closed");
 		} catch (Exception e) {
 			System.out.println("ERROR: stor failed");
 		}
