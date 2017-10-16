@@ -81,45 +81,43 @@ public class ServerThread extends Thread {
 					dataOutToClient.writeBytes(f.getName() + "\n");
 				}
 			}
+			
 			dataOutToClient.writeBytes("eof");
 			dataOutToClient.close();
 			dataSocket.close();
 		} catch (Exception e) {
-			System.out.println("!!!list failed!!!");
+			System.out.println("ERROR: list failed");
 		}
+	}
+	
+	public void stor(Socket connectionSocket, int port, String fileName) {
+		
 	}
 
 	private void retr(Socket connectionSocket, int port, String fileName) {
-		File folder = new File(System.getProperty("user.dir"));
-		File[] listOfFiles = folder.listFiles();
-
-		File send = null;
-		for (File f: listOfFiles) {
-			if (f.isFile() && f.getName().equals(fileName)) {
-				send = f;
-				break;
-			}
-		}
-
+		Socket dataSocket;
+		DataOutputStream dataOutToClient;
+		BufferedReader inputStream;
+		
 		try {
-			if (send == null) {
-				outToClient.writeBytes("550 file not found");
-			} else {
-				outToClient.writeBytes("200 command ok");
+			dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+			dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
 
-//				Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-//				DataOutputStream dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
-//				BufferedReader br = new BufferedReader(new FileReader(send));
-//				String line;
-//				while ((line = br.readLine()) != null) {
-//					dataOutToClient.writeBytes(line);
-//				}
-//				dataOutToClient.writeBytes("eof");
-//				dataOutToClient.close();
-//				dataSocket.close();
-			}
+			inputStream = new BufferedReader(new FileReader(fileName));
+			
+	        String count;
+	        
+	        while ((count = inputStream.readLine()) != null) {
+	            dataOutToClient.writeBytes(count + "\n");
+	        }
+	        
+	        inputStream.close();
+
+			dataOutToClient.writeBytes("eof");
+			dataOutToClient.close();
+			dataSocket.close();
 		} catch (Exception e) {
-			System.out.println("!!!retr failed!!!");
+			
 		}
 	}
 
