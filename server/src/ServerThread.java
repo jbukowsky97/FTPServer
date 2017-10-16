@@ -170,6 +170,7 @@ public class ServerThread extends Thread {
 			File newFile = new File(ROOT_PATH + fileName);
 			newFile.createNewFile();
 
+			//move data from client to server file
 			try (PrintStream out = new PrintStream(new FileOutputStream(ROOT_PATH + fileName))) {
 				out.print(response.toString());
 			} finally {

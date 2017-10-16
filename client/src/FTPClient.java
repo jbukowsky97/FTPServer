@@ -128,14 +128,17 @@ class FTPClient {
 			Socket dataSocket = (createDataConnection(port, outToServer, sentence));
 			dataOutToServer = new DataOutputStream(dataSocket.getOutputStream());
 
+			//read the file
 			inputStream = new BufferedReader(new FileReader(ROOT_PATH + fileName));
 
 			String count;
 
+			//send to the server
 			while ((count = inputStream.readLine()) != null) {
 				dataOutToServer.writeBytes(count + "\n");
 			}
 
+			//close input stream
 			inputStream.close();
 
 			dataOutToServer.writeBytes("eof");
