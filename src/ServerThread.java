@@ -26,8 +26,9 @@ public class ServerThread extends Thread {
 	}
 
 	public void run() {
+		boolean running = true;
 		try {
-			while (true) {
+			while (running) {
 				while (!inFromClient.ready()) {
 
 				}
@@ -61,7 +62,8 @@ public class ServerThread extends Thread {
 					dataSocket.close();
 					System.out.println("Data Socket closed");
 				} else if (clientCommand.equals("quit")) {
-					System.out.println("Client " + connectionSocket.getInetAddress() + " disconnected\n");
+					quit(connectionSocket);
+					running = false;
 				}
 			}
 		} catch (Exception e) {
@@ -87,5 +89,15 @@ public class ServerThread extends Thread {
 
 		dataOutToClient.close();
 		dataSocket.close();
+	}
+
+	private void quit(Socket connectionSocket) {
+		System.out.println("Client " + connectionSocket.getInetAddress() + " disconnected\n");
+
+		try {
+			connectionSocket.close();
+		} catch (Exception e) {
+			
+		}
 	}
 }
