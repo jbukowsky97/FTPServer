@@ -61,6 +61,8 @@ public class ServerThread extends Thread {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			System.out.println("Client " + connectionSocket.getInetAddress() + " disconnected\n");
 		}
 	}
 
@@ -105,16 +107,16 @@ public class ServerThread extends Thread {
 			} else {
 				outToClient.writeBytes("200 command ok");
 
-				Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-				DataOutputStream dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
-				BufferedReader br = new BufferedReader(new FileReader(send));
-				String line;
-				while ((line = br.readLine()) != null) {
-					dataOutToClient.writeBytes(line);
-				}
-				dataOutToClient.writeBytes("eof");
-				dataOutToClient.close();
-				dataSocket.close();
+//				Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+//				DataOutputStream dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+//				BufferedReader br = new BufferedReader(new FileReader(send));
+//				String line;
+//				while ((line = br.readLine()) != null) {
+//					dataOutToClient.writeBytes(line);
+//				}
+//				dataOutToClient.writeBytes("eof");
+//				dataOutToClient.close();
+//				dataSocket.close();
 			}
 		} catch (Exception e) {
 			System.out.println("!!!retr failed!!!");
@@ -122,8 +124,6 @@ public class ServerThread extends Thread {
 	}
 
 	private void quit(Socket connectionSocket) {
-		System.out.println("Client " + connectionSocket.getInetAddress() + " disconnected\n");
-
 		try {
 			connectionSocket.close();
 		} catch (Exception e) {

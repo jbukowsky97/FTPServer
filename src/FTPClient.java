@@ -41,8 +41,24 @@ class FTPClient {
 		}
 	}
 
-	private void retr(int port, DataOutputStream outToServer, DataInputStream inFromServer, String sentence) {
-		
+	private void retr(int port, DataOutputStream outToServer, BufferedReader inFromServer, String sentence) {
+		try {
+			int dataPort = port + 2;
+			outToServer.writeBytes(dataPort + " " + sentence + "\n");
+
+			String statusCode = inFromServer.readLine();
+//			while ((statusCode = inFromServer.readLine()).equals("")) {
+//				System.out.println(statusCode);
+//			}
+
+			if (!statusCode.contains("200")) {
+				System.out.println("File not present on remote server");
+			} else {
+				System.out.println("Working");
+			}
+		} catch (Exception e) {
+
+		}
 	}
 
 	private void stor(int port, DataOutputStream outToServer, DataInputStream inFromServer, String sentence) {
@@ -63,7 +79,6 @@ class FTPClient {
 	public FTPClient() {
 		String modifiedSentence;
 		boolean isOpen = true;
-		String statusCode;
 
 		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 		String sentence = null;
@@ -101,10 +116,10 @@ class FTPClient {
 		}
 
 		DataOutputStream outToServer = null;
-		DataInputStream inFromServer = null;
+		BufferedReader inFromServer = null;
 		try {
 			outToServer = new DataOutputStream(controlSocket.getOutputStream());
-			inFromServer = new DataInputStream(new BufferedInputStream(controlSocket.getInputStream()));
+			inFromServer = new BufferedReader(new InputStreamReader(controlSocket.getInputStream()));
 		} catch (IOException e) {
 			System.out.println("ERROR: Could not setup data streams");
 			System.exit(5);
@@ -113,16 +128,16 @@ class FTPClient {
 		try {
 			while (isOpen) {
 
-				sentence = inFromUser.readLine().toLowerCase();
+				sentence = inFromUser.readLine();
 				System.out.println("---------------");
 
 				if (sentence.toLowerCase().equals("list")) {
 					list(port, outToServer, sentence);
-				} else if (sentence.equals("retr")) {
-					outToServer.writeBytes(port + " " + "retr" + '\n');
-				} else if (sentence.equals("stor")) {
+				} else if (sentence.toLowerCase().startsWith("retr")) {
+					retr(port, outToServer, inFromServer, sentence);
+				} else if (sentence.toLowerCase().startsWith("stor")) {
 					outToServer.writeBytes(port + " " + "stor" + '\n');
-				} else if (sentence.equals("quit")) {
+				} else if (sentence.toLowerCase().equals("quit")) {
 					quit(outToServer);
 				} else {
 					System.out.println("Unrecognized command!\nUsage:\n\tlist\n\t\tget list of files\n\tretr <filename>\n\t\tretrieve file with name provided\n\tstor <filename>\n\t\tstore file with name provided\n\tquit\n\t\tterminate connection");
