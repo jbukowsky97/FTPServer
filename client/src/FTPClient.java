@@ -7,6 +7,14 @@ class FTPClient {
 
     private static final String ROOT_PATH = System.getProperty("user.dir") + "/root/";
 
+
+	/* Method name: createDataConnection */
+	/* Arguments:	controlPort (int): control port for the TCP data connection */
+ 	/*				outToServer (DataOutputStream): data output stream for the TCP data connection */
+	/*				sentence (String): message to be sent to the server */
+	/* Returns: 	dataSocket (Socket) */
+	/* Usage: 		creates a TCP data connection on the given port number (controlPort) and */
+	/* 				returns a socket */
 	private Socket createDataConnection(int controlPort, DataOutputStream outToServer, String sentence) {
 
 		Socket dataSocket = null;
@@ -24,30 +32,46 @@ class FTPClient {
 		}
 	}
 
+
+	/* Method name: list
+	/* Arguments:	controlPort (int): control port for the TCP data connection */
+ 	/*				outToServer (DataOutputStream): data output stream for the TCP data connection */
+	/*				sentence (String): message to be sent to the server */
+	/* Usage: 		 */
 	private void list(int controlPort, DataOutputStream outToServer, String sentence) {
 		try {
 			Socket dataSocket = createDataConnection(controlPort, outToServer, sentence);
 			BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
 
+			/* Wait while the data is not ready for transmission */
 			while (!inData.ready())
 				;
 
 			StringBuffer response = new StringBuffer();
 			String msg;
 
+			/* Receive the message until encountering the end of the file "eof" */
 			while (!((msg = inData.readLine()).equals("eof"))) {
 				response.append(msg + "\n");
 			}
 
+			/* Print the response (the list of files) on the client side */
 			System.out.println(response.toString().trim());
 
+			/* Close the data sockets*/
 			inData.close();
 			dataSocket.close();
+			System.out.println("list data socket closed");
 		} catch (Exception e) {
 			System.out.println("ERROR: list failed");
 		}
 	}
 
+	/* Method name: retr
+	/* Arguments:	controlPort (int): control port for the TCP data connection */
+ 	/*				outToServer (DataOutputStream): data output stream for the TCP data connection */
+	/*				sentence (String): message to be sent to the server */
+	/* Usage: 		retrieve a file from a server and store it on the client */
 	private void retr(int controlPort, DataOutputStream outToServer, String sentence) {
         StringTokenizer tokens = new StringTokenizer(sentence);
         tokens.nextToken();
@@ -56,39 +80,55 @@ class FTPClient {
 			Socket dataSocket = createDataConnection(controlPort, outToServer, sentence);
 			BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
 
+			/* Wait while the data is not ready for transmission */
 			while (!inData.ready())
 				;
 
 			StringBuffer response = new StringBuffer();
 			String msg;
 
+			/* Receive the message until encountering the end of the file "eof" */
 			while (!((msg = inData.readLine()).equals("eof"))) {
 				response.append(msg + "\n");
 			}
 
+			/* Create a new file if it does NOT exist based on user input */
 			File newFile = new File(ROOT_PATH + fileName);
 			newFile.createNewFile();
 
+			/* Move the data from the servers response onto the new file */
 			try (PrintStream out = new PrintStream(new FileOutputStream(ROOT_PATH + fileName))) {
 				out.print(response.toString());
 			} finally {
 				System.out.println("retr successfull");
 			}
 
+			/* Close the data sockets*/
 			inData.close();
 			dataSocket.close();
+			System.out.println("retr data socket closed");
 		} catch (Exception e) {
 			System.out.println("ERROR: retr failed");
 		}
 	}
 
-	private void stor(int port, DataOutputStream outToServer, DataInputStream inFromServer, String sentence) {
+	/* Method name: stor */
+	/* Arguments:	controlPort (int): control port for the TCP data connection */
+ 	/*				inFromServer (DataInputStream): data input stream for the TCP data connection */
+	/*				sentence (String): message to be sent to the server */
+	/* Usage: 		store a file from the client onto the server */
+	private void stor(int port, DataInputStream inFromServer, String sentence) {
 
 	}
 
+	/* Method name: quit */
+	/* Arguments:	controlPort (int): control port for the TCP data connection */
+ 	/*				inFromServer (DataInputStream): data input stream for the TCP data connection */
+	/*				sentence (String): message to be sent to the server */
+	/* Usage: 		safely exit the client */
 	private void quit(DataOutputStream outToServer) {
 		try {
-			// Passing quit command and a dummy port to avoid server issues
+			/* Passing quit command and a dummy port to avoid server issues */
 			outToServer.writeBytes("0" + " " + "quit");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -97,6 +137,8 @@ class FTPClient {
 		System.exit(0);
 	}
 
+	/* Method name: FTPClient */
+	/* Usage: Interface for the FTP client commands */
 	public FTPClient() {
 		String modifiedSentence;
 		boolean isOpen = true;
@@ -108,26 +150,34 @@ class FTPClient {
 		int port = 0;
 		Socket controlSocket = null;
 
+		/* While we are NOT connected to a server*/
 		while (!connected) {
 			try {
 				sentence = inFromUser.readLine().toLowerCase();
+				/* If the client sends the command "connect" */
 				if (sentence.startsWith("connect")) {
 					StringTokenizer tokens = new StringTokenizer(sentence);
 
-					// skip connect token
+					/* Skip the connect token */
 					tokens.nextToken();
 
+					/* Receive the server name and port number and 
+					 * load them into separate identifiers */
 					String serverName = tokens.nextToken();
 					port = Integer.parseInt(tokens.nextToken());
 
+					/* Create a control socket based on that server name and port */
 					controlSocket = new Socket(serverName, port);
 
+					/* <Server name> is connected on port <port number> */
 					System.out.println(serverName + " connected on port " + port);
 					connected = controlSocket.isConnected();
+					/* If user enters the "quit" command */
 				} else if (sentence.startsWith("quit")) {
 					System.out.println("closing...\n");
 					System.exit(0);
 				} else {
+					/* If user is not connected to a server and is entering input */
 					System.out.println(
 							"You are not connected to a server, try\n\t'connect <ip/hostname> <port>' or 'quit' to exit");
 				}
@@ -139,6 +189,8 @@ class FTPClient {
 
 		DataOutputStream outToServer = null;
 		BufferedReader inFromServer = null;
+		
+		/* Attempt to set up data streams for the server to connect on */
 		try {
 			outToServer = new DataOutputStream(controlSocket.getOutputStream());
 			inFromServer = new BufferedReader(new InputStreamReader(controlSocket.getInputStream()));
@@ -148,8 +200,10 @@ class FTPClient {
 		}
 
 		try {
+			/* While the connection is open */
 			while (isOpen) {
 
+				/* Reads commands from the client until "quit" is entered */
 				sentence = inFromUser.readLine();
 				System.out.println("---------------");
 
@@ -172,6 +226,7 @@ class FTPClient {
 		}
 	}
 
+	/* Main Method */
 	public static void main(String argv[]) throws Exception {
 		new FTPClient();
 	}
