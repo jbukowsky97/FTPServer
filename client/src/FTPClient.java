@@ -121,6 +121,11 @@ class FTPClient {
 		BufferedReader inputStream;
 
 		try{
+			if (!(new File(fileName)).exists()) {
+				System.out.println("File does not exist");
+				return;
+			}
+
 			Socket dataSocket = (createDataConnection(port, outToServer, sentence));
 			dataOutToServer = new DataOutputStream(dataSocket.getOutputStream());
 
