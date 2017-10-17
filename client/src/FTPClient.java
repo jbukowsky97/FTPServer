@@ -121,7 +121,7 @@ class FTPClient {
 		BufferedReader inputStream;
 
 		try{
-			if (!(new File(fileName)).exists()) {
+			if (!(new File(ROOT_PATH + fileName)).exists()) {
 				System.out.println("File does not exist");
 				return;
 			}
