@@ -10,23 +10,36 @@ class FTPClient {
 
 	/* Method name: createDataConnection */
 	/* Arguments:	controlPort (int): control port for the TCP data connection */
- 	/*				outToServer (DataOutputStream): data output stream for the TCP data connection */
-	/*				sentence (String): message to be sent to the server */
-	/* Returns: 	dataSocket (Socket) */
-	/* Usage: 		creates a TCP data connection on the given port number (controlPort) and */
-	/* 				returns a socket */
-	private Socket createDataConnection(int controlPort, DataOutputStream outToServer, String sentence) {
+ 	/*		outToServer (DataOutputStream): data output stream for the TCP control connection */
+	/*		inFromServer (BufferedReader): data input stream for the TCP control connect */
+	/*		sentence (String): message to be sent to the server */
+	/* Returns: dataSocket (Socket) */
+	/* Usage: creates a TCP data connection on the given port number (controlPort) and */
+	/* 		returns a socket */
+	private Socket createDataConnection(int controlPort, DataOutputStream outToServer, BufferedReader inFromServer, String sentence) {
 
 		Socket dataSocket = null;
 
 		try {
 			int dataPort = controlPort + 2;
-			ServerSocket welcomeData = new ServerSocket(dataPort);
 			outToServer.writeBytes(dataPort + " " + sentence + "\n");
-			dataSocket = welcomeData.accept();
-			welcomeData.close();
+
+			String statusCode = "";
+			while ((statusCode = inFromServer.readLine()).equals("")) {
+				System.out.println();
+			}
+
+			if (!statusCode.contains("200")) {
+				System.out.println("File not present on remote server");
+			} else {
+				System.out.println("Working");
+				ServerSocket welcomeData = new ServerSocket(dataPort);
+				dataSocket = welcomeData.accept();
+				welcomeData.close();
+			}
+
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.out.println("Data connection cannot be established");
 		} finally {
 			return dataSocket;
 		}
@@ -35,12 +48,13 @@ class FTPClient {
 
 	/* Method name: list
 	/* Arguments:	controlPort (int): control port for the TCP data connection */
- 	/*				outToServer (DataOutputStream): data output stream for the TCP data connection */
-	/*				sentence (String): message to be sent to the server */
+ 	/*		outToServer (DataOutputStream): data output stream for the TCP control connection */
+	/*		inFromServer (BufferedReader): data input stream for the TCP control connect */
+	/*		sentence (String): message to be sent to the server */
 	/* Usage: 		 */
-	private void list(int controlPort, DataOutputStream outToServer, String sentence) {
+	private void list(int controlPort, DataOutputStream outToServer, BufferedReader inFromServer, String sentence) {
 		try {
-			Socket dataSocket = createDataConnection(controlPort, outToServer, sentence);
+			Socket dataSocket = createDataConnection(controlPort, outToServer, inFromServer, sentence);
 			BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
 
 			/* Wait while the data is not ready for transmission */
@@ -68,15 +82,16 @@ class FTPClient {
 
 	/* Method name: retr
 	/* Arguments:	controlPort (int): control port for the TCP data connection */
- 	/*				outToServer (DataOutputStream): data output stream for the TCP data connection */
-	/*				sentence (String): message to be sent to the server */
-	/* Usage: 		retrieve a file from a server and store it on the client */
-	private void retr(int controlPort, DataOutputStream outToServer, String sentence) {
+ 	/*		outToServer (DataOutputStream): data output stream for the TCP control connection */
+	/* 		inFromServer (BufferedReader): data input stream for the TCP control connect */
+	/*		sentence (String): message to be sent to the server */
+	/* Usage: retrieve a file from a server and store it on the client */
+	private void retr(int controlPort, DataOutputStream outToServer, BufferedReader inFromServer, String sentence) {
         StringTokenizer tokens = new StringTokenizer(sentence);
         tokens.nextToken();
 		String fileName = tokens.nextToken();
 		try {
-			Socket dataSocket = createDataConnection(controlPort, outToServer, sentence);
+			Socket dataSocket = createDataConnection(controlPort, outToServer, inFromServer, sentence);	
 			BufferedReader inData = new BufferedReader(new InputStreamReader(dataSocket.getInputStream()));
 
 			/* Wait while the data is not ready for transmission */
@@ -109,10 +124,11 @@ class FTPClient {
 	}
 	/* Method name: stor */
 	/* Arguments:	controlPort (int): control port for the TCP data connection */
- 	/*				outToServer (DataOutputStream): data output stream for the TCP data connection */
-	/*				sentence (String): message to be sent to the server */
+ 	/*		outToServer (DataOutputStream): data output stream for the TCP data connection */
+	/* 		inFromServer (BufferedReader): data input stream for the TCP control connect */
+	/*		sentence (String): message to be sent to the server */
 	/* Usage: 		store a file from the client onto the server */
-	private void stor(int port, DataOutputStream outToServer, String sentence) {
+	private void stor(int controlPort, DataOutputStream outToServer, BufferedReader inFromServer, String sentence) {
 		StringTokenizer tokens = new StringTokenizer(sentence);
 		tokens.nextToken();
 		String fileName = tokens.nextToken();
@@ -121,7 +137,7 @@ class FTPClient {
 		BufferedReader inputStream;
 
 		try{
-			Socket dataSocket = (createDataConnection(port, outToServer, sentence));
+			Socket dataSocket = createDataConnection(controlPort, outToServer, inFromServer, sentence);
 			dataOutToServer = new DataOutputStream(dataSocket.getOutputStream());
 
 			//read the file
@@ -238,11 +254,11 @@ class FTPClient {
 				System.out.println("");
 
 				if (sentence.toLowerCase().equals("list")) {
-					list(port, outToServer, sentence);
+					list(port, outToServer, inFromServer, sentence);
 				} else if (sentence.toLowerCase().startsWith("retr ") && sentence.split(" ").length == 2) {
-					retr(port, outToServer, sentence);
+					retr(port, outToServer, inFromServer, sentence);
 				} else if (sentence.toLowerCase().startsWith("stor ") && sentence.split(" ").length == 2) {
-					stor(port, outToServer, sentence);
+					stor(port, outToServer, inFromServer, sentence);
 				} else if (sentence.toLowerCase().equals("quit")) {
 					quit(outToServer);
 				} else {

@@ -15,6 +15,9 @@ public class ServerThread extends Thread {
 	private DataOutputStream outToClient;
 	private BufferedReader inFromClient;
 
+	private static final String OK = "200 command ok";
+	private static final String NO_FILE = "550 command failed";
+
 	private static final String ROOT_PATH = System.getProperty("user.dir") + "/root/";
 
 	/* Method name: ServerThread */
@@ -30,6 +33,42 @@ public class ServerThread extends Thread {
 		} catch (IOException e) {
 			System.out.println("ERROR: could not set up data streams");
 		}
+	}
+
+	/*
+ 	* Method name: createDataConnection
+ 	* Arguments:	dataPort (int): port to create data connection on
+ 	* 		sendOK (boolean): whether requested command successful and OK message should
+ 	* 			be sent.
+ 	* Usage: responds to client with proper message and creates data connection
+ 	* Return: Newly create data Socket or null if sendOK false
+  	*/
+	private Socket createDataConnection(int dataPort, boolean sendOK) {
+		Socket dataSocket = null;
+
+		// Tell the client if the command was successful
+		try {
+			if (!sendOK) {
+				outToClient.writeBytes(NO_FILE);
+				return null;
+			} else {
+				outToClient.writeBytes(OK);
+			}
+		} catch (Exception e) {
+			return null;
+		}
+
+		// Establish data connection with client
+		while (dataSocket == null || !dataSocket.isConnected()) {
+			try {
+				dataSocket = new Socket(connectionSocket.getInetAddress(), dataPort);
+			} catch (Exception e) {
+				System.out.println("Not connected");
+			}
+		}
+
+		// Return the new data connection
+		return dataSocket;
 	}
 
 	/* Method name: Run */
@@ -86,16 +125,23 @@ public class ServerThread extends Thread {
 			File folder = new File(ROOT_PATH);
 			File[] listOfFiles = folder.listFiles();
 
-			dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-			dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+System.out.println("Test1");
+			dataSocket = createDataConnection(port, true);
 
+			// Return if no data connection to work with
+			if (dataSocket == null) {
+				return;
+			}
+
+			dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+System.out.println("Test2");
 			/* Transmit the list of file names */
 			for (File f : listOfFiles) {
 				if (f.isFile()) {
 					dataOutToClient.writeBytes(f.getName() + "\n");
 				}
 			}
-
+System.out.println("Test3");
 			/* End of the file "eof" */
 			dataOutToClient.writeBytes("eof");
 			dataOutToClient.close();
@@ -116,25 +162,43 @@ public class ServerThread extends Thread {
 		BufferedReader inputStream;
 
 		try {
-			dataSocket = new Socket(connectionSocket.getInetAddress(), port);
-			dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
-			
-			/* Create an input stream based on the given file path */
-			inputStream = new BufferedReader(new FileReader(ROOT_PATH + fileName));
+			File folder = new File(ROOT_PATH);
+			File[] listOfFiles = folder.listFiles();
 
-			String count;
-
-			/* While the stream does not equal null, send each line to the client */
-			while ((count = inputStream.readLine()) != null) {
-				dataOutToClient.writeBytes(count + "\n");
+			boolean fileExists = false;
+			for (File f: listOfFiles) {
+				if (f.getName().equals(fileName)) {
+					fileExists = true;
+					break;
+				}
 			}
 
-			/* Close the input stream */
-			inputStream.close();
+			if (!fileExists) {
+				System.out.println("Test no file");
+				outToClient.writeBytes(NO_FILE);
+			} else {
+				System.out.println("Test file found");
+				outToClient.writeBytes(OK);
+				dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+				dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+			
+				/* Create an input stream based on the given file path */
+				inputStream = new BufferedReader(new FileReader(ROOT_PATH + fileName));
 
-			dataOutToClient.writeBytes("eof");
-			dataOutToClient.close();
-			dataSocket.close();
+				String count;
+
+				/* While the stream does not equal null, send each line to the client */
+				while ((count = inputStream.readLine()) != null) {
+					dataOutToClient.writeBytes(count + "\n");
+				}
+
+				/* Close the input stream */
+				inputStream.close();
+
+				dataOutToClient.writeBytes("eof");
+				dataOutToClient.close();
+				dataSocket.close();
+			}
 		} catch (Exception e) {
 			System.out.println("ERROR: retr failed");
 		}
